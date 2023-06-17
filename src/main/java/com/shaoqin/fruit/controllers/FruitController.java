@@ -22,15 +22,11 @@ import java.util.List;
  * Create 6/16/23 5:52 PM
  * Version 1.0
  */
-public class FruitController extends ViewBaseServlet {
+public class FruitController {
 
     private final FruitDAO fruitDAO = new FruitDaoImpl();
 
-    public void setServletContext(ServletContext servletContext) throws ServletException {
-        super.init(servletContext);
-    }
-
-    private void index(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private String index(HttpServletRequest req) {
         FruitDAO fruitDao = new FruitDaoImpl();
         HttpSession session = req.getSession();
 
@@ -106,49 +102,56 @@ public class FruitController extends ViewBaseServlet {
         session.setAttribute("currPageNumber", currPage);
         session.setAttribute("totalPage", maxPage);
 
-        super.processTemplate("fruit/index", req, resp);
+        // super.processTemplate("fruit/index", req, resp);
+        return "fruit/index";
     }
 
-    private void add (HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private String add (HttpServletRequest req) {
         String name = req.getParameter("name");
         Double price = Double.parseDouble(req.getParameter("price"));
         Integer count = Integer.parseInt(req.getParameter("count"));
         String remark = req.getParameter("remark");
         fruitDAO.addFruit(new Fruit(1, name, price, count, remark));
-        resp.sendRedirect("fruit");
+        // resp.sendRedirect("fruit");
+        return "redirect:fruit";
     }
 
 
-    private void del(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private String del(HttpServletRequest req) {
         String idStr = req.getParameter("id");
         if (StringUtil.isNotEmpty(idStr)) {
             int id = Integer.parseInt(idStr);
             fruitDAO.deleteFruit(id);
 
-            resp.sendRedirect("fruit");
+            // resp.sendRedirect("fruit");
+            return "redirect:fruit";
         }
+        return "error";
     }
 
-    private void edit(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private String edit(HttpServletRequest req) {
         String idStr = req.getParameter("id");
         if(StringUtil.isNotEmpty(idStr)) {
             int id = Integer.parseInt(idStr);
             Fruit fruit = fruitDAO.getFruitById(id);
             req.setAttribute("fruit", fruit);
-            super.processTemplate("fruit/edit", req, resp);
+            // super.processTemplate("fruit/edit", req, resp);
+            return "fruit/edit";
         } else {
-            super.processTemplate("fruit/add", req, resp);
+            // super.processTemplate("fruit/add", req, resp);
+            return "fruit/add";
         }
     }
 
-    private void update(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private String update(HttpServletRequest req) {
         Integer id = Integer.parseInt(req.getParameter("id"));
         String name = req.getParameter("name");
         Double price = Double.parseDouble(req.getParameter("price"));
         Integer count = Integer.parseInt(req.getParameter("count"));
         String remark = req.getParameter("remark");
         fruitDAO.updateFruit(new Fruit(id, name, price, count, remark));
-        resp.sendRedirect("fruit");
+        // resp.sendRedirect("fruit");
+        return "redirect:fruit";
     }
 
 }

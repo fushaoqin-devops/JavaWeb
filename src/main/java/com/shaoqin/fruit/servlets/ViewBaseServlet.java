@@ -1,6 +1,7 @@
 package com.shaoqin.fruit.servlets;
 
 import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,9 +19,10 @@ public class ViewBaseServlet extends HttpServlet {
     private TemplateEngine templateEngine;
     private JakartaServletWebApplication application;
 
-    public void init(ServletContext servletContext) {
+    @Override
+    public void init() throws ServletException {
         // get application context
-        // ServletContext servletContext = this.getServletContext();
+        ServletContext servletContext = this.getServletContext();
         application = JakartaServletWebApplication.buildApplication(servletContext);
 
         // get resolver

@@ -2,6 +2,7 @@ package com.shaoqin.fruit.servlets;
 
 import com.shaoqin.fruit.utils.StringUtil;
 import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,18 +32,21 @@ import java.util.Map;
  * Version 1.0
  */
 @WebServlet("/fruit/*")
-public class DispatcherServlet extends HttpServlet {
+public class DispatcherServlet extends ViewBaseServlet {
     private final Map<String, Object> beanMap = new HashMap<>();
 
     @Override
-    public void init() {
+    public void init() throws ServletException {
+        super.init();
         try {
+            // Get beans from configuration file
             InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("ApplicationContext.xml");
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
             Document document = documentBuilder.parse(inputStream);
             NodeList beanList = document.getElementsByTagName("bean");
 
+            // Put each bean in a map
             for (int i = 0; i < beanList.getLength(); i++) {
                 Node node = beanList.item(i);
                 if (Node.ELEMENT_NODE == node.getNodeType()) {
@@ -50,14 +54,11 @@ public class DispatcherServlet extends HttpServlet {
                     Class<?> controllerClass = Class.forName(bean.getAttribute("class"));
                     Object beanObj = controllerClass.newInstance();
                     String beanId = bean.getAttribute("id");
-                    Method setServletContext = controllerClass.getDeclaredMethod("setServletContext", ServletContext.class);
-                    setServletContext.invoke(beanObj, this.getServletContext());
-
                     beanMap.put(beanId, beanObj);
                 }
             }
         } catch (ParserConfigurationException | IOException | SAXException | ClassNotFoundException |
-                 InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                 InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
@@ -75,9 +76,18 @@ public class DispatcherServlet extends HttpServlet {
         if (StringUtil.isEmpty(operate)) operate = "index";
 
         try {
-            Method method = controllerObject.getClass().getDeclaredMethod(operate, HttpServletRequest.class, HttpServletResponse.class);
+            Method method = controllerObject.getClass().getDeclaredMethod(operate, HttpServletRequest.class);
             method.setAccessible(true);
-            method.invoke(controllerObject, req, resp);
+            Object returnObj = method.invoke(controllerObject, req);
+            String methodReturnStr = (String) returnObj;
+            if (methodReturnStr.startsWith("redirect:")) {
+                // Redirect to other servlet
+                String redirectStr = methodReturnStr.substring("redirect:".length());
+                resp.sendRedirect(redirectStr);
+            } else {
+                // Render Thymeleaf template
+                super.processTemplate(methodReturnStr, req, resp);
+            }
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
