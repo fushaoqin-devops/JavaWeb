@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,19 +77,51 @@ public class DispatcherServlet extends ViewBaseServlet {
         if (StringUtil.isEmpty(operate)) operate = "index";
 
         try {
-            Method method = controllerObject.getClass().getDeclaredMethod(operate, HttpServletRequest.class);
-            method.setAccessible(true);
-            Object returnObj = method.invoke(controllerObject, req);
-            String methodReturnStr = (String) returnObj;
-            if (methodReturnStr.startsWith("redirect:")) {
-                // Redirect to other servlet
-                String redirectStr = methodReturnStr.substring("redirect:".length());
-                resp.sendRedirect(redirectStr);
-            } else {
-                // Render Thymeleaf template
-                super.processTemplate(methodReturnStr, req, resp);
+            Method[] methods = controllerObject.getClass().getDeclaredMethods();
+            for (Method method : methods) {
+                if (operate.equals(method.getName())) {
+                    // get parameters
+                    Parameter[] parameters = method.getParameters();
+                    Object[] parameterValues = new Object[parameters.length];
+                    for (int i = 0; i < parameters.length; i++) {
+                        Parameter parameter = parameters[i];
+                        String parameterName = parameter.getName();
+                        if ("req".equals(parameterName)) {
+                            parameterValues[i] = req;
+                        } else if ("resp".equals(parameterName)) {
+                            parameterValues[i] = resp;
+                        } else if ("session".equals(parameterName)) {
+                            parameterValues[i] = req.getSession();
+                        } else {
+                            String parameterValue = req.getParameter(parameterName);
+                            String typeName = parameter.getType().getTypeName();
+                            Object parameterObj = parameterValue;
+                            if (parameterObj != null) {
+                                if ("java.lang.Integer".equals(typeName)) {
+                                    parameterObj =  Integer.parseInt(parameterValue);
+                                } else if ("java.lang.Double".equals(typeName)) {
+                                    parameterObj = Double.parseDouble(parameterValue);
+                                }
+                            }
+                            parameterValues[i] = parameterObj;
+                        }
+                    }
+
+                    method.setAccessible(true);
+                    Object returnObj = method.invoke(controllerObject, parameterValues);
+                    String methodReturnStr = (String) returnObj;
+                    if (methodReturnStr.startsWith("redirect:")) {
+                        // Redirect to other servlet
+                        String redirectStr = methodReturnStr.substring("redirect:".length());
+                        resp.sendRedirect(redirectStr);
+                    } else {
+                        // Render Thymeleaf template
+                        super.processTemplate(methodReturnStr, req, resp);
+                    }
+                }
             }
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            // Method method = controllerObject.getClass().getDeclaredMethod(operate, HttpServletRequest.class);
+        } catch (InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
