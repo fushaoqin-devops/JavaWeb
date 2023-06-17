@@ -84,6 +84,7 @@ public class DispatcherServlet extends ViewBaseServlet {
                     Parameter[] parameters = method.getParameters();
                     Object[] parameterValues = new Object[parameters.length];
                     for (int i = 0; i < parameters.length; i++) {
+                        // need to handle different parameters
                         Parameter parameter = parameters[i];
                         String parameterName = parameter.getName();
                         if ("req".equals(parameterName)) {
@@ -120,7 +121,6 @@ public class DispatcherServlet extends ViewBaseServlet {
                     }
                 }
             }
-            // Method method = controllerObject.getClass().getDeclaredMethod(operate, HttpServletRequest.class);
         } catch (InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }

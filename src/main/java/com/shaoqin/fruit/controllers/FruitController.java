@@ -30,25 +30,15 @@ public class FruitController {
         FruitDAO fruitDao = new FruitDaoImpl();
         HttpSession session = req.getSession();
 
-        // get parameters
-        // String currPageStr = req.getParameter("pageNumber");
-        // String keyword = req.getParameter("keyword");
-
-        // set current page, defaults to 1 when user first visit the page
-        // int currPage = 1;
-        // if (StringUtil.isNotEmpty(pageNumber)) {
-        //     currPage = Integer.parseInt(pageNumber);
-        //     if (currPage == 0) currPage = 1;    // handling negative page
-        // }
-        if (pageNumber == null) pageNumber = 1;
+        if (pageNumber == null) pageNumber = 1; // default to first page
         int currPage = pageNumber;
 
-        // determine if the request has keyword
         List<Fruit> fruitList;
         Integer fruitCount;
         boolean isSearch = false;
         if (StringUtil.isNotEmpty(keyword)) {
-            // user clicks the search button
+            // keyword exists in req when user first submit a search
+            // keyword only exists in session during a search
             currPage = 1;
             isSearch = true;
             session.setAttribute("keyword", keyword);
@@ -57,10 +47,9 @@ public class FruitController {
             session.setAttribute("keyword", null);  // reset session keyword
         } else {
             // user clicks on the pagination section
-            // need to decide if there's existing keyword
+            // if keyword exists in session, then keyword in effect
             Object existingKeyword = session.getAttribute("keyword");
             if (existingKeyword != null) {
-                // there's a keyword
                 isSearch = true;
                 keyword = (String) existingKeyword;
             }
@@ -104,20 +93,17 @@ public class FruitController {
         session.setAttribute("currPageNumber", currPage);
         session.setAttribute("totalPage", maxPage);
 
-        // super.processTemplate("fruit/index", req, resp);
         return "fruit/index";
     }
 
     private String add (String name, Double price, Integer count, String remark) {
         fruitDAO.addFruit(new Fruit(1, name, price, count, remark));
-        // resp.sendRedirect("fruit");
         return "redirect:fruit";
     }
 
     private String del(Integer id) {
         if (id != null) {
             fruitDAO.deleteFruit(id);
-            // resp.sendRedirect("fruit");
             return "redirect:fruit";
         }
         return "error";
@@ -127,17 +113,14 @@ public class FruitController {
         if(id != null) {
             Fruit fruit = fruitDAO.getFruitById(id);
             req.setAttribute("fruit", fruit);
-            // super.processTemplate("fruit/edit", req, resp);
             return "fruit/edit";
         } else {
-            // super.processTemplate("fruit/add", req, resp);
             return "fruit/add";
         }
     }
 
     private String update(Integer id, String name, Double price, Integer count, String remark) {
         fruitDAO.updateFruit(new Fruit(id, name, price, count, remark));
-        // resp.sendRedirect("fruit");
         return "redirect:fruit";
     }
 
