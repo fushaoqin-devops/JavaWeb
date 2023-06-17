@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Add Inventory</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="/fruit/css/add.css">
+</head>
+<body>
+<h1>Add Inventory</h1>
+<form action="/fruit" method="post">
+  <input type="hidden" name="operate" value="add">
+  <table>
+    <tr>
+      <th>Name：</th>
+      <td><input type="text" autofocus name="name" placeholder="Enter fruit name"/></td>
+    </tr>
+    <tr>
+      <th>Price：</th>
+      <td><input type="text" name="price" placeholder="Enter fruit price"/></td>
+    </tr>
+    <tr>
+      <th>Count：</th>
+      <td><input type="text" name="count" placeholder="Enter fruit count"/></td>
+    </tr>
+    <tr>
+      <th>Remark：</th>
+      <td><input type="text" name="remark" placeholder="Enter anything about the fruit"/></td>
+    </tr>
+    <tr>
+      <th colspan="2"><input class="submit-button" type="submit" value="Add"></th>
+    </tr>
+  </table>
+</form>
+</body>
+</html>

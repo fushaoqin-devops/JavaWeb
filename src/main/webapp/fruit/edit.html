@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>Edit Inventory</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="/fruit/css/edit.css">
+  </head>
+  <body>
+    <h1>Edit Inventory</h1>
+    <form th:action="@{/fruit}" method="post">
+      <input type="hidden" name="operate" value="update">
+      <table th:object="${fruit}">
+        <input type="hidden" name="id" th:value="*{id}">
+        <tr>
+          <th>Name：</th>
+          <td><input type="text" autofocus name="name" placeholder="Enter fruit name" th:value="*{name}"/></td>
+        </tr>
+        <tr>
+          <th>Price：</th>
+          <td><input type="text" name="price" placeholder="Enter fruit price" th:value="*{price}"/></td>
+        </tr>
+        <tr>
+          <th>Count：</th>
+          <td><input type="text" name="count" placeholder="Enter fruit count" th:value="*{count}"/></td>
+        </tr>
+        <tr>
+          <th>Remark：</th>
+          <td><input type="text" name="remark" placeholder="Enter anything about the fruit" th:value="*{remark}"/></td>
+        </tr>
+        <tr>
+          <th th:colspan="2"><input class="submit-button" type="submit" value="Edit"></th>
+        </tr>
+      </table>
+    </form>
+  </body>
+</html>

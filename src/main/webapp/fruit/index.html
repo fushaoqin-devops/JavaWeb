@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Fruit Inventory Management System</title>
+        <link rel="stylesheet" type="text/css" href="/fruit/css/index.css">
+        <script src="/fruit/js/index.js"></script>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <h1>Fruit Inventory Management System</h1>
+
+        <div>
+            <div class="header-container">
+                <form th:action="@{/fruit}" method="post" class="search-form">
+                    Enter Search Keyword: <input type="text" name="keyword" class="search-input" th:value="${session.keyword}"/>
+                    <input type="submit" value="search" class="search-button"/>
+                </form>
+                <a th:href="@{/fruit(operate='edit')}" class="add-button">Add New Inventory</a>
+<!--                <a th:href="@{fruit/add.html}" class="add-button">添加新库存记录</a>-->
+            </div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Count</th>
+                    <th>Delete</th>
+                </tr>
+                </thead>
+                <tbody id="fruitTableBody">
+                <!-- Fruit data will be dynamically inserted here -->
+                <tr th:if="${#lists.isEmpty(session.fruitList)}">
+                    <td colspan="4">Sorry, inventory is empty！</td>
+                </tr>
+                <tr th:unless="${#lists.isEmpty(session.fruitList)}" th:each="fruit : ${session.fruitList}">
+                    <!--                <td><a th:text="${fruit.name}" th:href="@{'/edit?id=' + ${fruit.id}}"></a></td>-->
+                    <td><a th:text="${fruit.name}" th:href="@{/fruit(id=${fruit.id}, operate='edit')}"></a></td>
+                    <td><a th:text="${fruit.price}"></a></td>
+                    <td><a th:text="${fruit.count}"></a></td>
+                    <td><img src="/fruit/images/trash.png" alt="delete icon" width="25px" th:onclick="|delFruit(${fruit.id})|"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <a th:href="@{'/fruit?pageNumber=1'}">First</a>
+            <a th:href="@{'/fruit?pageNumber=' + ${session.currPageNumber -1}}" th:if="${session.currPageNumber > 1}">Previous</a>
+            <span th:each="pageNumber : ${session.pageNumbers}">
+                    <a th:href="@{'/fruit?pageNumber=' + ${pageNumber}}" th:class="${pageNumber == session.currPageNumber ? 'page active' : 'page'}" th:text="${pageNumber}"></a>
+                </span>
+            <a th:href="@{'/fruit?pageNumber=' + ${session.currPageNumber + 1}}" th:if="${session.currPageNumber < session.totalPage}">Next</a>
+            <a th:href="@{'/fruit?pageNumber=-1'}">Last</a>
+        </div>
+    </body>
+</html>
