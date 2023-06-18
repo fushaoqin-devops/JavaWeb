@@ -1,4 +1,4 @@
-package com.shaoqin.fruit.business;
+package com.shaoqin.fruit.service;
 
 import com.shaoqin.fruit.pojo.Fruit;
 

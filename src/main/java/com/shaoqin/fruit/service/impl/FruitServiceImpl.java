@@ -1,11 +1,8 @@
-package com.shaoqin.fruit.business.impl;
+package com.shaoqin.fruit.service.impl;
 
-import com.shaoqin.fruit.business.FruitService;
+import com.shaoqin.fruit.service.FruitService;
 import com.shaoqin.fruit.dao.FruitDAO;
-import com.shaoqin.fruit.dao.impl.FruitDaoImpl;
 import com.shaoqin.fruit.pojo.Fruit;
-import com.shaoqin.fruit.utils.StringUtil;
-import jakarta.servlet.http.HttpSession;
 
 import java.util.List;
 
@@ -19,7 +16,7 @@ import java.util.List;
  */
 public class FruitServiceImpl implements FruitService {
 
-    private FruitDAO fruitDAO = new FruitDaoImpl();
+    private FruitDAO fruitDAO = null;
 
     @Override
     public List<Fruit> getFruitList(String keyword, Integer pageNo, Integer pageSize) {

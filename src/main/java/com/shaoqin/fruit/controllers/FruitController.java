@@ -1,19 +1,10 @@
 package com.shaoqin.fruit.controllers;
 
-import com.shaoqin.fruit.business.FruitService;
-import com.shaoqin.fruit.business.impl.FruitServiceImpl;
-import com.shaoqin.fruit.dao.FruitDAO;
-import com.shaoqin.fruit.dao.impl.FruitDaoImpl;
+import com.shaoqin.fruit.service.FruitService;
 import com.shaoqin.fruit.pojo.Fruit;
-import com.shaoqin.fruit.servlets.ViewBaseServlet;
-import com.shaoqin.fruit.utils.StringUtil;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -26,7 +17,7 @@ import java.util.List;
  */
 public class FruitController {
 
-    private final FruitService fruitService = new FruitServiceImpl();
+    private final FruitService fruitService = null;
 
     private String index(String keyword, Integer pageNumber, HttpServletRequest req) {
         HttpSession session = req.getSession();
