@@ -1,5 +1,7 @@
 package com.shaoqin.fruit.servlets;
 
+import com.shaoqin.fruit.io.BeanFactory;
+import com.shaoqin.fruit.io.ClassPathXmlApplicationContext;
 import com.shaoqin.fruit.utils.StringUtil;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -34,34 +36,13 @@ import java.util.Map;
  */
 @WebServlet("/fruit/*")
 public class DispatcherServlet extends ViewBaseServlet {
-    private final Map<String, Object> beanMap = new HashMap<>();
+
+    private BeanFactory beanFactory;
 
     @Override
     public void init() throws ServletException {
         super.init();
-        try {
-            // Get beans from configuration file
-            InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("ApplicationContext.xml");
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            Document document = documentBuilder.parse(inputStream);
-            NodeList beanList = document.getElementsByTagName("bean");
-
-            // Put each bean in a map
-            for (int i = 0; i < beanList.getLength(); i++) {
-                Node node = beanList.item(i);
-                if (Node.ELEMENT_NODE == node.getNodeType()) {
-                    Element bean = (Element) node;
-                    Class<?> controllerClass = Class.forName(bean.getAttribute("class"));
-                    Object beanObj = controllerClass.newInstance();
-                    String beanId = bean.getAttribute("id");
-                    beanMap.put(beanId, beanObj);
-                }
-            }
-        } catch (ParserConfigurationException | IOException | SAXException | ClassNotFoundException |
-                 InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        beanFactory = new ClassPathXmlApplicationContext();
     }
 
     @Override
@@ -71,7 +52,7 @@ public class DispatcherServlet extends ViewBaseServlet {
         // Get controller
         String servletPath = req.getServletPath();
         servletPath = servletPath.substring(1);
-        Object controllerObject = beanMap.get(servletPath);
+        Object controllerObject = beanFactory.getBean(servletPath);
 
         String operate = req.getParameter("operate");
         if (StringUtil.isEmpty(operate)) operate = "index";

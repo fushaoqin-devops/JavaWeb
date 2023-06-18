@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <beans>
-    <bean id="fruit" class="com.shaoqin.fruit.controllers.FruitController"></bean>
+    <bean id="fruitDAO" class="com.shaoqin.fruit.dao.impl.FruitDaoImpl"></bean>
+    <!--fruitService replies on fruitDAO-->
+    <bean id="fruitService" class="com.shaoqin.fruit.service.impl.FruitServiceImpl">
+        <property name="fruitDAO" ref="fruitDAO" />
+    </bean>
+    <bean id="fruit" class="com.shaoqin.fruit.controllers.FruitController">
+        <!--name is the field name in FruitController, ref is the reference to the bean of fruitService-->
+        <property name="fruitService" ref="fruitService" />
+    </bean>
 </beans>
