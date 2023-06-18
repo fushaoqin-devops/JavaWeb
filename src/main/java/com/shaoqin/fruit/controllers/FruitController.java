@@ -1,5 +1,7 @@
 package com.shaoqin.fruit.controllers;
 
+import com.shaoqin.fruit.business.FruitService;
+import com.shaoqin.fruit.business.impl.FruitServiceImpl;
 import com.shaoqin.fruit.dao.FruitDAO;
 import com.shaoqin.fruit.dao.impl.FruitDaoImpl;
 import com.shaoqin.fruit.pojo.Fruit;
@@ -24,86 +26,40 @@ import java.util.List;
  */
 public class FruitController {
 
-    private final FruitDAO fruitDAO = new FruitDaoImpl();
+    private final FruitService fruitService = new FruitServiceImpl();
 
     private String index(String keyword, Integer pageNumber, HttpServletRequest req) {
-        FruitDAO fruitDao = new FruitDaoImpl();
         HttpSession session = req.getSession();
 
-        if (pageNumber == null) pageNumber = 1; // default to first page
-        int currPage = pageNumber;
-
-        List<Fruit> fruitList;
-        Integer fruitCount;
-        boolean isSearch = false;
-        if (StringUtil.isNotEmpty(keyword)) {
-            // keyword exists in req when user first submit a search
-            // keyword only exists in session during a search
-            currPage = 1;
-            isSearch = true;
-            session.setAttribute("keyword", keyword);
-        } else if (keyword != null && keyword.equals("")) {
-            // search of empty string
-            session.setAttribute("keyword", null);  // reset session keyword
-        } else {
-            // user clicks on the pagination section
-            // if keyword exists in session, then keyword in effect
+        int currPage = pageNumber == null ? 1 : pageNumber;
+        if (keyword == null) {
             Object existingKeyword = session.getAttribute("keyword");
-            if (existingKeyword != null) {
-                isSearch = true;
-                keyword = (String) existingKeyword;
-            }
-        }
-        fruitCount = isSearch ? fruitDao.getFruitCount(keyword) : fruitDao.getFruitCount();
-
-        // handle pagination
-        Integer PAGE_SIZE = 8;
-        int maxPage = fruitCount % PAGE_SIZE == 0 ? fruitCount / PAGE_SIZE : fruitCount / PAGE_SIZE + 1;
-        int startPage, endPage;
-        int MAX_VISIBLE_PAGE = 5;
-        if (currPage < 0) {
-            // handling last page as last page sets page index to -1
-            endPage = maxPage;
-            currPage = endPage;
-            startPage = Math.max(1, endPage - MAX_VISIBLE_PAGE + 1);
-        } else {
-            currPage = Math.min(currPage, maxPage);
-            startPage = Math.max(currPage - MAX_VISIBLE_PAGE / 2, 1);
-            endPage = startPage + MAX_VISIBLE_PAGE - 1;
-
-            // handle endPage where it exceeds max page
-            if (endPage * PAGE_SIZE > fruitCount) {
-                endPage = maxPage;
-                startPage = Math.max(1, endPage - MAX_VISIBLE_PAGE + 1);    // handle page number smaller than 1
-            }
+            if (existingKeyword != null) keyword = (String) existingKeyword;
         }
 
-        // populate page numbers displayed in pagination
-        Integer[] pageNumbers = new Integer[endPage - startPage + 1];
-        for (int i = 0; i < endPage - startPage + 1; i++) {
-            pageNumbers[i] = i + startPage;
-        }
+        Integer[] paginationIndex = fruitService.getPageNationIndex(keyword, currPage);
+        Integer[] pageNumbers = fruitService.getPaginationNumbers(paginationIndex);
 
-        // if there's keyword, return fruits that contains the keyword
-        // if there isn't, then return all fruits
-        fruitList = isSearch ? fruitDao.getFruitList(keyword, currPage, PAGE_SIZE) : fruitDao.getFruitList(currPage, PAGE_SIZE);
+        currPage = paginationIndex[1];
+        List<Fruit> fruitList = fruitService.getFruitList(keyword, currPage, fruitService.PAGE_SIZE);
 
+        session.setAttribute("keyword", keyword);
         session.setAttribute("fruitList", fruitList);
         session.setAttribute("pageNumbers", pageNumbers);
         session.setAttribute("currPageNumber", currPage);
-        session.setAttribute("totalPage", maxPage);
+        session.setAttribute("totalPage", paginationIndex[3]);
 
         return "fruit/index";
     }
 
     private String add (String name, Double price, Integer count, String remark) {
-        fruitDAO.addFruit(new Fruit(1, name, price, count, remark));
+        fruitService.addFruit(new Fruit(1, name, price, count, remark));
         return "redirect:fruit";
     }
 
     private String del(Integer id) {
         if (id != null) {
-            fruitDAO.deleteFruit(id);
+            fruitService.delFruit(id);
             return "redirect:fruit";
         }
         return "error";
@@ -111,7 +67,7 @@ public class FruitController {
 
     private String edit(Integer id, HttpServletRequest req) {
         if(id != null) {
-            Fruit fruit = fruitDAO.getFruitById(id);
+            Fruit fruit = fruitService.getFruitById(id);
             req.setAttribute("fruit", fruit);
             return "fruit/edit";
         } else {
@@ -120,7 +76,7 @@ public class FruitController {
     }
 
     private String update(Integer id, String name, Double price, Integer count, String remark) {
-        fruitDAO.updateFruit(new Fruit(id, name, price, count, remark));
+        fruitService.updateFruit(new Fruit(id, name, price, count, remark));
         return "redirect:fruit";
     }
 
